@@ -126,21 +126,64 @@ def extract_activities(dataframe, activity_name):
         
     return all_activities
 
+def basic_statics(data:list):
+    return np.mean(data), np.std(data), np.var(data)
+
 
 if __name__ == '__main__':
     
-    data = load_data(data_path, columns)
-    mapping = one_hot_mapping(data, ["Sensor", "Activity"])
-    # print(mapping)
+    BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
+    
+    sensor_type = {
+        "M": "motion sensor",
+        "I01": "oatmeal sensor",
+        "I02": "raisins sensor",
+        "I03": "brown sugar sensor",
+        "I04": "bowl sensor",
+        "I05": "measuring spoon sensor",
+        "I07": "pot sensor",
+        "I08": "phone book sensor",
+        "D01": "cabinet sensor",
+        "AD1-A": "water sensor",
+        "AD1-B": "water sensor",
+        "AD1-C": "burner sensor",
+        "asterisk": "phone usage"
+    }
 
-    # {'activity_name':[first_group_of_rows, second_group_of_rows, ...]}
-    all_activities = {}
-    for activity in activities:
+    columns = ["Date", "Time", "Sensor", "Sensor_Status", "Activity", "Activity_Status"]
+    activities = ['Phone_Call', 'Wash_hands', 'Cook', 'Eat', 'Clean']
+    
+    data = load_data(f'{BASE_PATH}/datasets/adlnormal/data', columns)
+    mapping = one_hot_mapping(data, ["Sensor", "Activity"])
+    output_mapping = one_hot_mapping(pd.DataFrame({"Activities": activities}), ["Activities"])
+
+    all_activities = {} # {'activity_name':[first_group_of_rows, second_group_of_rows, ...]}
+    for i, activity in enumerate( activities ): # each activity
         all_activities[activity] = extract_activities(data, activity)
+        
+        batches = []
+        for j, a in enumerate( all_activities[activity] ):  # each batch of the same activity
+            
+            batches.append(len(a))
+            vectorized_data = vectorize_dataset(a, mapping) # .to_numpy()
+            
+            out_file = f'{BASE_PATH}/datasets/onehot/{activity}/{activity}_onehot_batch_{j}.csv'
+            vectorized_data.to_csv(out_file, sep='\t')
+        
+        batches.sort()
+        mean, std, var = basic_statics(batches)
+        summary_file = f'{BASE_PATH}/datasets/onehot/summary.txt'
+        summary = f'{activity}:\t mean:{mean}, \t std:{std}, \t var:{var} \n batch_sizes: {batches} \n\n'
+        with open(summary_file, "a") as myfile:
+            # myfile.seek(0)                        # <- This is the missing piece
+            # myfile.truncate()
+            myfile.write(summary)
+                         
 
     # example of converting second group of rows of the activity into one_hot_dataframe
-    activity_series = all_activities['Cook'][1]
-    print(activity_series)
-    print("======================")
-    vectorized_data = vectorize_dataset(activity_series, mapping)
-    print(vectorized_data)
+    # activity_series = all_activities['Cook'][1]
+    # print(activity_series)
+    # print("======================")
+    # vectorized_data = vectorize_dataset(activity_series, mapping)
+    # print(vectorized_data)
+ 

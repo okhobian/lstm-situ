@@ -5,9 +5,15 @@ import pandas as pd
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
-
 from data import *
 
+   
+    
+'''
+1. many-to-one architecture
+2. each input [x1, x2, x3, ... xi] corresponding to one row of the sequence (all features at time t)
+3. needs a model that accepts multi-length input (similar to sentence (var length words to next word))
+'''
 
 # Define LSTM Neural Networks
 class LstmRNN(nn.Module):
@@ -33,64 +39,10 @@ class LstmRNN(nn.Module):
         return x
     
     
-if __name__ == '__main__':
-    
-    data_path = '/Users/hobian/Desktop/GitHub/situ-biot/datasets/adlnormal/data'
-
-    sensor_type = {
-        "M": "motion sensor",
-        "I01": "oatmeal sensor",
-        "I02": "raisins sensor",
-        "I03": "brown sugar sensor",
-        "I04": "bowl sensor",
-        "I05": "measuring spoon sensor",
-        "I07": "pot sensor",
-        "I08": "phone book sensor",
-        "D01": "cabinet sensor",
-        "AD1-A": "water sensor",
-        "AD1-B": "water sensor",
-        "AD1-C": "burner sensor",
-        "asterisk": "phone usage"
-    }
-
-    columns = ["Date", "Time", "Sensor", "Sensor_Status", "Activity", "Activity_Status"]
-    activities = ['Phone_Call', 'Wash_hands', 'Cook', 'Eat', 'Clean']
-    
-    data = load_data(data_path, columns)
-    mapping = one_hot_mapping(data, ["Sensor", "Activity"])
-    output_mapping = one_hot_mapping(pd.DataFrame({"Activities": activities}), ["Activities"])
-
-    all_activities = {} # {'activity_name':[first_group_of_rows, second_group_of_rows, ...]}
-    for i, activity in enumerate( activities ):
-        if i > 0:
-            break
-        all_activities[activity] = extract_activities(data, activity)
-        
-        for a in all_activities[activity]:
-            vectorized_data = vectorize_dataset(a, mapping).to_numpy()
-            print(type(vectorized_data))
-            print(vectorized_data)
-            
-            
-        print(len(all_activities[activity]))
-        
-
-    # example of converting second group of rows of the activity into one_hot_dataframe
-    # activity_series = all_activities['Cook'][1]
-    # print(activity_series)
-    # print("======================")
-    # vectorized_data = vectorize_dataset(activity_series, mapping)
-    # print(vectorized_data)
+# if __name__ == '__main__':
     
     
-    '''
-    1. many-to-one architecture
-    2. each input [x1, x2, x3, ... xi] corresponding to one row of the sequence (all features at time t)
-    3. needs a model that accepts multi-length input (similar to sentence (var length words to next word))
-    '''
-    
-    
-    ###################################################################################
+###################################################################################
 """
     # create database
     data_len = 200
