@@ -1,27 +1,10 @@
 import pandas as pd
 import numpy as np
-
-data_path = '/Users/hobian/Desktop/GitHub/situ-biot/datasets/adlnormal/data'
-
-sensor_type = {
-    "M": "motion sensor",
-    "I01": "oatmeal sensor",
-    "I02": "raisins sensor",
-    "I03": "brown sugar sensor",
-    "I04": "bowl sensor",
-    "I05": "measuring spoon sensor",
-    "I07": "pot sensor",
-    "I08": "phone book sensor",
-    "D01": "cabinet sensor",
-    "AD1-A": "water sensor",
-    "AD1-B": "water sensor",
-    "AD1-C": "burner sensor",
-    "asterisk": "phone usage"
-}
-
-columns = ["Date", "Time", "Sensor", "Sensor_Status", "Activity", "Activity_Status"]
-activities = ['Phone_Call', 'Wash_hands', 'Cook', 'Eat', 'Clean']
-
+from numpy import array
+from numpy import argmax
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import minmax_scale
 
 
 def load_data(filename, columns):
@@ -31,11 +14,6 @@ def load_data(filename, columns):
     return df
 
 def one_hot_mapping(dataframe, columns):
-    
-    from numpy import array
-    from numpy import argmax
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.preprocessing import OneHotEncoder
     
     '''
         columns: columns that need to be encoded
@@ -81,8 +59,8 @@ def vectorize_dataset(dataframe, mappings):
         subject to change, very specific to this dataset
     '''
     
-    on_definitions = ['ON', 'START', 'OPEN', 'PRESENT']
-    off_definitions = ['OFF', 'END', 'CLOSE', 'ABSENT']
+    on_definitions = ['ON', 'START', 'OPEN', 'PRESENT', 'START_INSTRUCT']
+    off_definitions = ['OFF', 'END', 'CLOSE', 'ABSENT', 'STOP_INSTRUCT']
     
     # define new columns in vectorized dataframe (all sensors + sensor status)
     _new_columns = list(mappings['Sensor'].keys())+['Sensor_Status']
@@ -109,7 +87,10 @@ def vectorize_dataset(dataframe, mappings):
         # new row as dict to be added to the dataframe
         _new_row = dict(zip(_new_columns, sensor_one_hot_encode))
         vectorized_data = pd.concat([vectorized_data, pd.DataFrame([_new_row])])
-            
+    
+    # scale sensor values to between 0 and 1; may need further implementation for ON_OFF situations
+    vectorized_data[['Sensor_Status']] = minmax_scale(vectorized_data[['Sensor_Status']])
+    
     return vectorized_data
 
 
