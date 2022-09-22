@@ -39,9 +39,9 @@ def one_hot_mapping(dataframe, columns):
         onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
         # print(onehot_encoded)
     
-        # invert first example
+        ## invert first example
         # inverted = label_encoder.inverse_transform([argmax(onehot_encoded[0, :])])
-        # print(inverted)
+        # print(">>>", inverted)
         
         
         '''
@@ -63,11 +63,18 @@ def vectorize_dataset(dataframe, mappings):
     off_definitions = ['OFF', 'END', 'CLOSE', 'ABSENT', 'STOP_INSTRUCT']
     
     # define new columns in vectorized dataframe (all sensors + sensor status)
-    _new_columns = list(mappings['Sensor'].keys())+['Sensor_Status']
+    _new_columns = ['']* (len(mappings['Sensor'].keys())+1)
+    for k, v in mappings['Sensor'].items():
+        _new_columns[argmax(v)] = k # order sensor names based on one-hot encoding positions
+        
+    _new_columns[-1] = 'Sensor_Status'
     vectorized_data = pd.DataFrame(columns=_new_columns)
+    # print(_new_columns)
 
     # go over raw data by row
     for index, row in dataframe.iterrows():
+        
+        # if index > 0: break
         
         # new encoded row
         sensor_one_hot_encode = list(mappings['Sensor'][row['Sensor']])
@@ -93,7 +100,6 @@ def vectorize_dataset(dataframe, mappings):
     
     return vectorized_data
 
-
 def extract_activities(dataframe, activity_name):
     activity = dataframe.loc[dataframe['Activity'] == activity_name]
     activity_begins = activity.iloc[::2, :].index.values        # idx of every 2nd row starting from the first row
@@ -109,6 +115,9 @@ def extract_activities(dataframe, activity_name):
 
 def basic_statics(data:list):
     return np.mean(data), np.std(data), np.var(data)
+
+# def preprocessing_batches(folder):
+    
 
 
 if __name__ == '__main__':
@@ -140,25 +149,46 @@ if __name__ == '__main__':
 
     all_activities = {} # {'activity_name':[first_group_of_rows, second_group_of_rows, ...]}
     for i, activity in enumerate( activities ): # each activity
+        
+        # if i > 0: break
+        
         all_activities[activity] = extract_activities(data, activity)
         
+        batch_sizes = []
         batches = []
         for j, a in enumerate( all_activities[activity] ):  # each batch of the same activity
             
-            batches.append(len(a))
-            vectorized_data = vectorize_dataset(a, mapping) # .to_numpy()
+            batch_sizes.append(len(a))
+            vectorized_data = vectorize_dataset(a, mapping) # dataframe
+            batches.append(vectorized_data.to_numpy())      # list of numpy arrays
+            print(vectorized_data)
+            # vectorized_data = vectorized_data.to_numpy()
+            batch_vectorized_label = output_mapping['Activities'][activity]
             
-            out_file = f'{BASE_PATH}/datasets/onehot/{activity}/{activity}_onehot_batch_{j}.csv'
-            vectorized_data.to_csv(out_file, sep='\t')
+            # print(vectorized_data.shape)
+            # print(batch_vectorized_label.shape)
+            # batch_data = np.stack((vectorized_data, batch_vectorized_label), axis=2)
+            # # print(batch_data)
+            # print(batch_data.shape)
+            # print("--------------------------------")
+            
+            # # output onehot batches to csv files
+            # out_file = f'{BASE_PATH}/datasets/onehot/{activity}/{activity}_onehot_batch_{j}.csv'
+            # vectorized_data.to_csv(out_file, sep='\t')
         
-        batches.sort()
-        mean, std, var = basic_statics(batches)
-        summary_file = f'{BASE_PATH}/datasets/onehot/summary.txt'
-        summary = f'{activity}:\t mean:{mean}, \t std:{std}, \t var:{var} \n batch_sizes: {batches} \n\n'
-        with open(summary_file, "a") as myfile:
-            # myfile.seek(0)                        # <- This is the missing piece
-            # myfile.truncate()
-            myfile.write(summary)
+        
+        # print(batches)
+        
+        
+        # # compute dataset statics
+        # batch_sizes.sort()
+        # mean, std, var = basic_statics(batch_sizes)
+        # summary_file = f'{BASE_PATH}/datasets/onehot/summary.txt'
+        # summary = f'{activity}:\t mean:{mean}, \t std:{std}, \t var:{var} \n batch_sizes: {batch_sizes} \n\n'
+        # with open(summary_file, "a") as myfile:
+        #     # myfile.seek(0)                       
+        #     # myfile.truncate()
+        #     myfile.write(summary)
                          
 
     # example of converting second group of rows of the activity into one_hot_dataframe
