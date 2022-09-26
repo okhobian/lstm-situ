@@ -150,7 +150,7 @@ if __name__ == '__main__':
     all_activities = {} # {'activity_name':[first_group_of_rows, second_group_of_rows, ...]}
     for i, activity in enumerate( activities ): # each activity
         
-        # if i > 0: break
+        if i > 0: break
         
         all_activities[activity] = extract_activities(data, activity)
         
@@ -158,12 +158,15 @@ if __name__ == '__main__':
         batches = []
         for j, a in enumerate( all_activities[activity] ):  # each batch of the same activity
             
+            if j > 0: break
+            
             batch_sizes.append(len(a))
             vectorized_data = vectorize_dataset(a, mapping) # dataframe
             batches.append(vectorized_data.to_numpy())      # list of numpy arrays
             print(vectorized_data)
             # vectorized_data = vectorized_data.to_numpy()
             batch_vectorized_label = output_mapping['Activities'][activity]
+            print(batch_vectorized_label)
             
             # print(vectorized_data.shape)
             # print(batch_vectorized_label.shape)
