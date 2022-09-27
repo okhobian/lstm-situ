@@ -72,14 +72,9 @@ class ADLNORMAL:
         
         
         # one-hot encode labels
-        # print(l)
-        integer_mapping = {x: i for i,x in enumerate(set(l))}
-        # print(integer_mapping)
+        integer_mapping = {x: i for i,x in enumerate(sorted(set(l)))}
         vec = [integer_mapping[word] for word in l]
-        # print(vec)
         onehot_labels = to_categorical(vec, num_classes=5)
-        # print(onehot_labels[0])
-        # print(len(onehot_labels[0]))
         
         ## example of getting back to real values
         # indices = np.argmax(onehot_labels[0])
@@ -96,10 +91,10 @@ class ADLNORMAL:
         ## 3. spilit into train, test    
         X_train, X_test, y_train, y_test = train_test_split(padding, onehot_labels,
                                                             random_state=42, 
-                                                            test_size=0.2, 
+                                                            test_size=0.01, 
                                                             shuffle=True)
             
-        return np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
+        return word_idx, integer_mapping, np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
 
         
 
