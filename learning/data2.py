@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
+from keras_preprocessing import sequence
+
 
 
 class ADLNORMAL:
@@ -51,7 +53,7 @@ class ADLNORMAL:
     
     def compose_train_test_sets(self):
         
-        # 1. onehot s and l;
+        ## 1. onehot s and l;
         s, l = self.extract_sequences()
         
         unique_col_vals = self.df['Sensor'].dropna().unique()   # extract unique sensor types from data
@@ -68,27 +70,36 @@ class ADLNORMAL:
             sequences = tokenizer.texts_to_sequences(seq) 
             tokenized_seq.append(sequences)
         
+        
         # one-hot encode labels
-        integer_mapping = {x: i for i,x in enumerate(l)}
+        # print(l)
+        integer_mapping = {x: i for i,x in enumerate(set(l))}
+        # print(integer_mapping)
         vec = [integer_mapping[word] for word in l]
-        onehot_labels = to_categorical(vec, num_classes=len(vec))
-        # print(onehot_labels)
+        # print(vec)
+        onehot_labels = to_categorical(vec, num_classes=5)
+        # print(onehot_labels[0])
+        # print(len(onehot_labels[0]))
         
         ## example of getting back to real values
-        # indices = np.argmax(onehot_labels, axis=-1)
+        # indices = np.argmax(onehot_labels[0])
         # print(indices)
-        # print(l[indices[0]])
+        # print(l[indices])
         
         # print(len(tokenized_seq))
         # print(len(onehot_labels))
         
-        # 2. spilit into train, test    
-        X_train, X_test, y_train, y_test = train_test_split(tokenized_seq, onehot_labels,
+        ## 2. padding
+        maxLen = len(max(tokenized_seq, key=len))
+        padding = sequence.pad_sequences(tokenized_seq, maxlen=maxLen, value=0)
+        
+        ## 3. spilit into train, test    
+        X_train, X_test, y_train, y_test = train_test_split(padding, onehot_labels,
                                                             random_state=42, 
                                                             test_size=0.2, 
                                                             shuffle=True)
             
-        return X_train, X_test, y_train, y_test
+        return np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
 
         
 
@@ -106,6 +117,3 @@ if __name__ == '__main__':
     
     
     
-    
-    # mapping = one_hot_mapping(data, ["Sensor", "Activity"])
-    # output_mapping = one_hot_mapping(pd.DataFrame({"Activities": activities}), ["Activities"])
