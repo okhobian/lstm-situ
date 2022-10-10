@@ -11,7 +11,13 @@ from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 from keras_preprocessing import sequence
 
-
+class OpenSHS:
+    def __init__(self, ):
+        self.columns = None
+        self.activities = None
+        self.df = None
+    
+    
 
 class ADLNORMAL:
     def __init__(self, ):
@@ -26,7 +32,6 @@ class ADLNORMAL:
         self.df.columns = self.columns
 
     def extract_sequences(self):
-               
         sequences = []
         labels = []
         for curr_activity in self.activities:
@@ -100,6 +105,8 @@ class ADLNORMAL:
 
 if __name__ == '__main__':
     
+    np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+    
     BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
     DATA_FILE = f'{BASE_PATH}/datasets/adlnormal/data'
 
@@ -108,7 +115,7 @@ if __name__ == '__main__':
     
     data = ADLNORMAL()
     data.load_data(DATA_FILE, columns, activities)
-    X_train, X_test, y_train, y_test = data.compose_train_test_sets()
+    feature, label, X_train, X_test, y_train, y_test = data.compose_train_test_sets()
     
     
     
