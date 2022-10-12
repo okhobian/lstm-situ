@@ -11,25 +11,33 @@ from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 from keras_preprocessing import sequence
 
-class OpenSHS:
+class DATASET:
     def __init__(self, ):
         self.columns = None
         self.activities = None
         self.df = None
     
-    
-
-class ADLNORMAL:
-    def __init__(self, ):
-        self.columns = None
-        self.activities = None
-        self.df = None
-        
     def load_data(self, filename, columns, activities):
         self.columns = columns
         self.activities = activities
         self.df = pd.read_csv(filename, delim_whitespace=True, header=None)
         self.df.columns = self.columns
+
+class OpenSHS(DATASET):
+    pass
+    
+
+class ADLNORMAL(DATASET):
+    # def __init__(self, ):
+    #     self.columns = None
+    #     self.activities = None
+    #     self.df = None
+        
+    # def load_data(self, filename, columns, activities):
+    #     self.columns = columns
+    #     self.activities = activities
+    #     self.df = pd.read_csv(filename, delim_whitespace=True, header=None)
+    #     self.df.columns = self.columns
 
     def extract_sequences(self):
         sequences = []
