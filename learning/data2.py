@@ -54,7 +54,8 @@ class DATASET:
         #     trainY.append(_df.iloc[i + label_ahead - 1:i + label_ahead, 0].values.tolist())
         for i in range(window_size, len(_df) - label_ahead +1):
             trainX.append(_X.iloc[i - window_size:i, ].values.tolist())
-            trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead, ].values.tolist())
+            # trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.tolist()) # (18817, 1, 4)
+            trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.reshape(-1,).tolist()) # (18817, 4)
         
         trainX, trainY = np.array(trainX), np.array(trainY)
                 

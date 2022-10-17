@@ -24,7 +24,7 @@ model.add(Dense(5, activation='softmax'))
 print(model.summary())
 
 # print(X_train.shape)
-# print(y_train.shape)
+print(y_train.shape)
 
 # print(X_train[0])
 # print(y_train[0])
