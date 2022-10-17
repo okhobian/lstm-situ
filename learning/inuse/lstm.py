@@ -1,7 +1,7 @@
 from data import *
 from models import *
 from history_callback import *
-from matplotlib import pyplot as plt
+from plot import *
 
 ## VARIABLES
 BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
@@ -23,24 +23,8 @@ histories = Histories()
 model.fit(trainX, trainY, batch_size=20, epochs=1, verbose=1, callbacks=[histories])  # validation_data=(x_test, y_test),
 
 ## RESULTS
-plt.plot(histories.losses)
-plt.title('model losses')
-plt.ylabel('loss')
-plt.xlabel('batch')
-plt.legend(['loss'], loc='upper left')
-plt.figure()
-
-plt.plot(histories.accuracies)
-plt.title('model accuracies')
-plt.ylabel('accuracy')
-plt.xlabel('batch')
-plt.legend(['accuracy'], loc='upper left')
-plt.figure()
-
-plt.plot(histories.times)
-plt.title('training time')
-plt.ylabel('time')
-plt.xlabel('batch')
-plt.legend(['time'], loc='upper left')
-
-plt.show()
+plt = PLOT()
+plt.add_figure(histories.accuracies, 'model accuracies', 'batch', 'accuracy', ['accuracy'])
+plt.add_figure(histories.losses, 'model losses', 'batch', 'loss', ['loss'])
+plt.add_figure(histories.times, 'training time', 'batch', 'time', ['time'])
+plt.show_all()
