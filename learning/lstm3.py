@@ -1,8 +1,8 @@
-from re import X
+import time
 from data2 import *
 from matplotlib import pyplot as plt
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
+from keras.layers import Dense, LSTM, Dropout, GRU
 
 
 BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
@@ -12,8 +12,6 @@ activities = ['sleep', 'eat', 'personal', 'work', 'leisure', 'anomaly', 'other']
 
 data = DATASET()
 data.load_data(DATA_FILE, activities)
-
-
 trainX, trainY = data.compose_train_test_sets(15, 1)
 
 
@@ -36,10 +34,15 @@ class Histories(Callback):
     def on_train_begin(self,logs={}):
         self.losses = []
         self.accuracies = []
+        self.times = []
+
+    def on_batch_begin(self, batch, logs=None):
+        self.epoch_time_start = time.time()
 
     def on_batch_end(self, batch, logs={}):
         self.losses.append(logs.get('loss'))
         self.accuracies.append(logs.get('accuracy'))
+        self.times.append(time.time() - self.epoch_time_start)
 
 
 histories = Histories()
@@ -62,6 +65,14 @@ plt.title('model accuracies')
 plt.ylabel('accuracy')
 plt.xlabel('batch')
 plt.legend(['accuracy'], loc='upper left')
+plt.figure()
+
+plt.plot(histories.times)
+plt.title('training time')
+plt.ylabel('time')
+plt.xlabel('batch')
+plt.legend(['time'], loc='upper left')
+
 
 # plt.plot(histories.accuracies)
 # plt.plot(histories.losses)
