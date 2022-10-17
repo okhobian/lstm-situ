@@ -17,7 +17,7 @@ data = DATASET()
 data.load_data(DATA_FILE, activities)
 
 
-trainX, trainY = data.compose_train_test_sets(15)
+trainX, trainY = data.compose_train_test_sets(15, 1)
 # print(trainX)
 
 # model = Sequential()
