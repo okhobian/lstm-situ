@@ -5,22 +5,28 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Embedding
+from keras.layers import InputLayer
 
 
 BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
-DATA_FILE = f'{BASE_PATH}/datasets/adlnormal/data'
+DATA_FILE = f'{BASE_PATH}/datasets/openshs/dataset.csv'
 
-columns = ["Date", "Time", "Sensor", "Sensor_Status", "Activity", "Activity_Status"]
-activities = ['Phone_Call', 'Wash_hands', 'Cook', 'Eat', 'Clean']
+activities = ['sleep', 'eat', 'personal', 'work', 'leisure', 'anomaly', 'other']
 
-data = ADLNORMAL()
-data.load_data(DATA_FILE, activities, columns)
-feature, label, X_train, X_test, y_train, y_test = data.compose_train_test_sets()
+data = OpenSHS()
+data.load_data(DATA_FILE, activities)
+
+
+maxLen, X_train, X_test, y_train, y_test = data.compose_train_test_sets()
+print(X_train.shape)
+# print(X_train)
 
 model = Sequential()
-model.add(Embedding(30, 30, input_length=216))
+# model.add(Embedding(8929536, 8929536, input_length=maxLen))
+model.add(LSTM(50, return_sequences=True, input_shape=(255,1)))
 model.add(LSTM(50))
-model.add(Dense(5, activation='softmax'))
+model.add(Dense(7, activation='softmax'))
+model.build((maxLen,))
 print(model.summary())
 
 # print(X_train.shape)
@@ -30,34 +36,31 @@ print(model.summary())
 # print(y_train[0])
 
 ## Train ########################
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-history = model.fit(X_train, y_train, validation_split=0.3, epochs=100, batch_size=5)
+# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+# history = model.fit(X_train, y_train, validation_split=0.3, epochs=100, batch_size=5)
 
 ## Test ########################
 # The evaluate() method - gets the loss statistics
-print("======== eval ==========")
-model.evaluate(X_test, y_test, batch_size=1)     
+# print("======== eval ==========")
+# model.evaluate(X_test, y_test, batch_size=1)     
 
+'''
 ## Predict ########################
 # The predict() method - predict the outputs for the given inputs
 print("======== pred ==========")
 seq = np.array([[1],[2],[9],[10],[3],[2],[1],[9],[10],[3],[4],[4],[4],[3],[3],[4],[3],[13],[3],[3],[13]]) # 01000 -> wash
-test_sample = np.array(sequence.pad_sequences(seq, maxlen=216, value=0))
+test_sample = np.array(sequence.pad_sequences(seq, maxlen=maxLen, value=0))
 
 predicted = (model.predict(test_sample) > 0.5).astype("int32")
 # predicted = model.predict(test_sample) 
 print(predicted[0])
-
-print(feature)
-print(label)
+'''
     
-
-
 
 ## Plot ########################
 # history_dict = history.history
 # print(history_dict.keys())
-
+'''
 from matplotlib import pyplot as plt
 plt.plot(history.history['accuracy'])
 plt.plot(history.history['val_accuracy'])
@@ -98,3 +101,4 @@ plt.show()
 # plt.legend()
 
 # plt.show()
+'''
