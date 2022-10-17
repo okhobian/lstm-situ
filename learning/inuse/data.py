@@ -32,7 +32,7 @@ class DATASET:
             self.activities = activities
             self.df.columns = self.columns
             
-    def compose_train_test_sets(self, window_size, label_ahead):
+    def train_data(self, window_size, label_ahead):
         trainX = []
         trainY = []
         
