@@ -19,7 +19,7 @@ data.load_data(DATA_FILE, activities)
 
 trainX, trainY = data.compose_train_test_sets(15, 1)
 # print(trainX)
-
+# print(trainY)
 # model = Sequential()
 # # model.add(Embedding(8929536, 8929536, input_length=maxLen))
 # model.add(LSTM(50, return_sequences=True, input_shape=(255,1)))
