@@ -40,9 +40,8 @@ class DATASET:
         _X = self.df.iloc[0:, :-2].reset_index(drop=True)      # remove header row & activity+timestamp col
         _Y = pd.get_dummies(self.df['Activity'])
        
-        # if _Y.shape[1] != len(self.activities):
-        #     msg = f"[SELF-WARNING]: dataset contains less type of activities. predefined: [{len(self.activities)}]; acutal: [{_Y.shape[1]}]"
-        #     warnings.warn(msg)
+        if _Y.shape[1] != len(self.activities):
+            warnings.warn("[SELF-WARNING]: dataset contains less type of activities.")
             
         # print(_X.head(10))
         # print("_X >> ", _X.shape)
