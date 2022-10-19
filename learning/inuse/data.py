@@ -106,18 +106,10 @@ class DATASET:
         mins = []
         # stds = []
         for activity in self.activities:
-            # print(activity)
-            # print(stats[activity]['avg_seq_len'])
             avgs.append(stats[activity]['avg_seq_len'])
             maxs.append(stats[activity]['max_seq_len'])
             mins.append(stats[activity]['min_seq_len'])
             # stds.append(stats[activity]['seq_len_std'])
-            
-        # print(avgs)
-        # set height of bar
-        # IT = [12, 30, 1, 8, 22]
-        # ECE = [28, 6, 16, 5, 10]
-        # CSE = [29, 3, 24, 25, 17]
         
         # Set position of bar on X axis
         br1 = np.arange(len(avgs))
@@ -150,6 +142,27 @@ class DATASET:
         plt.legend()
         plt.show()
     
+    def _plot_box(self, stats):
+        avgs = []
+        maxs = []
+        mins = []
+        stds = []
+        for activity in self.activities:
+            avgs.append(stats[activity]['avg_seq_len'])
+            maxs.append(stats[activity]['max_seq_len'])
+            mins.append(stats[activity]['min_seq_len'])
+            stds.append(stats[activity]['seq_len_std'])
+        
+        
+        plt.rcParams["figure.figsize"] = [7.50, 3.50]
+        plt.rcParams["figure.autolayout"] = True
+        df = pd.DataFrame(dict(min=mins, max=maxs, avg=avgs, std=stds))
+        df.boxplot()
+        
+        plt.title("Overall Stats for All Activities")
+        plt.ylabel('Sequence Length')
+        plt.show()    
+
     def extract_sequences(self):
         grouped = self.df.groupby( (self.df.Activity != self.df.Activity.shift()).cumsum())    # group by each activity       
         # sequences = []
@@ -187,4 +200,5 @@ if __name__ == '__main__':
     print(json.dumps(s, sort_keys=False, indent=4))
 
     
-    data._plot_stats(s)
+    # data._plot_stats(s)
+    data._plot_box(s)
