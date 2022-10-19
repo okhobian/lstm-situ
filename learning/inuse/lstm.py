@@ -5,8 +5,10 @@ from plot import *
 
 ## VARIABLES
 BASE_PATH = '/Users/hobian/Desktop/GitHub/lstm-situ'
-DATA_FILE = f'{BASE_PATH}/datasets/openshs/dataset.csv'
-ACTIVITIES = ['sleep', 'eat', 'personal', 'work', 'leisure', 'anomaly', 'other']
+DATA_FILE = f'{BASE_PATH}/datasets/openshs/dataset_10_01_ignore_ts.csv'
+# ACTIVITIES = ['sleep', 'eat', 'personal', 'work', 'leisure', 'anomaly', 'other']
+ACTIVITIES = ['sleep', 'getup', 'eat', 'work', 'leisure', 'watchtv', 'rest', 'cook', 'goout', 'other']
+
 WINDOW_SIZE = 15
 LABEL_AHEAD = 1
 
