@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout, GRU, RNN
+from keras.layers import Dense, LSTM, Dropout, GRU, RNN, SimpleRNN
 
 
 def build_lstm(trainX_window_size, trainX_feature_length, trainY_num_categories):
@@ -14,7 +14,7 @@ def build_lstm(trainX_window_size, trainX_feature_length, trainY_num_categories)
 
 def build_rnn(trainX_window_size, trainX_feature_length, trainY_num_categories):
     model = Sequential()
-    model.add(RNN(64, activation='relu', input_shape=(trainX_window_size, trainX_feature_length), return_sequences=False))
+    model.add(SimpleRNN(64, activation='relu', input_shape=(trainX_window_size, trainX_feature_length), return_sequences=False))
     # model.add(RNN(32, activation='relu', return_sequences=False))
     model.add(Dropout(0.2))
     model.add(Dense(trainY_num_categories, activation='softmax'))

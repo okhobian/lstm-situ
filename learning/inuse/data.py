@@ -18,12 +18,16 @@ import warnings
 
 
 class DATASET:
-    def __init__(self, ):
+    def __init__(self, noise=False):
         self.columns = None
         self.activities = None
         self.df = None
+        self.train_data = None
+        self.test_data = None
+        self.noise = noise
     
     def load_data(self, filename, activities, columns=None):
+        
         if columns:
             self.df = pd.read_csv(filename, delim_whitespace=True, header=None)
             self.columns = columns
@@ -35,37 +39,116 @@ class DATASET:
             self.activities = activities
             self.df.columns = self.columns
             
-    def train_data(self, window_size, label_ahead):
-        trainX = []
-        trainY = []
         
-        _df = self.df.iloc[0:, :-1].reset_index(drop=True)    # remove header row & timestamp col
-        _X = self.df.iloc[0:, :-2].reset_index(drop=True)      # remove header row & activity+timestamp col
-        _Y = pd.get_dummies(self.df['Activity'])
+    
+    def split_data(self, test_percentage=0.1):
+        test_size  = int(len(self.df) * test_percentage)
+        train_data = self.df.iloc[test_size:]
+        test_data  = self.df.iloc[:test_size]
+        
+        # apply noise or not
+        train_data = self._add_noise(train_data) if self.noise else train_data
+        test_data = self._add_noise(test_data) if self.noise else test_data
+        
+        train_data.to_csv('train_noise.csv', index=False)
+        test_data.to_csv('test_noise.csv', index=False)
+        
+        return train_data, test_data
+        
+        # form time series trainable data
+        trainX, trainY = self.form_data(train_data, window_size, label_ahead)
+        testX,  testY  = self.form_data(test_data, window_size, label_ahead)
+        
+        return trainX, trainY, testX, testY
+    
+    def form_data(self, df, window_size, label_ahead):
+        X = []
+        Y = []
+        
+        _df = df.iloc[0:, :-1].reset_index(drop=True)    # remove header row & timestamp col
+        _X = df.iloc[0:, :-2].reset_index(drop=True)      # remove header row & activity+timestamp col
+        _Y = pd.get_dummies(df['Activity'])
        
-        if _Y.shape[1] != len(self.activities):
-            warnings.warn("[SELF-WARNING]: dataset contains less type of activities.")
-            
-        # print(_X.head(10))
-        # print("_X >> ", _X.shape)
-        # print(_Y.head(10))
-        # print("_Y >> ", _Y.shape)
-        
-        # sliding window to compose multi-var train set
-        # for i in range(window_size, len(_df) - label_ahead +1):
-        #     trainX.append(_df.iloc[i - window_size:i, 0:29].values.tolist())
-        #     trainY.append(_df.iloc[i + label_ahead - 1:i + label_ahead, 0].values.tolist())
+        # if _Y.shape[1] != len(self.activities):
+        #     warnings.warn("[SELF-WARNING]: dataset contains less type of activities.")
+
         for i in range(window_size, len(_df) - label_ahead +1):
-            trainX.append(_X.iloc[i - window_size:i, ].values.tolist())
+            X.append(_X.iloc[i - window_size:i, ].values.tolist())
             # trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.tolist()) # (18817, 1, 4)
-            trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.reshape(-1,).tolist()) # (18817, 4)
+            Y.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.reshape(-1,).tolist()) # (18817, 4)
         
-        trainX, trainY = np.array(trainX), np.array(trainY)
+        X, Y = np.array(X), np.array(Y)
                 
-        print('trainX shape == {}.'.format(trainX.shape))
-        print('trainY shape == {}.'.format(trainY.shape))
+        # print('trainX shape == {}.'.format(X.shape))
+        # print('trainY shape == {}.'.format(Y.shape))
         
-        return trainX, trainY
+        return X, Y
+    
+    def _add_noise(self, df, row_percent=0.2):
+        num_rows = len(df)  # total length of the dataframe
+        num_mod_rows = int(num_rows * row_percent)  # how many rows to add noise on
+        mod_indices = np.random.choice(num_rows, num_mod_rows, replace=False)   # row indices to be modified
+        # mod_indices = [1,3]
+        # print("~~~~",mod_indices, num_mod_rows)
+        
+        noise_df = df.copy()
+        from tqdm import tqdm
+        for i in tqdm(mod_indices) :
+        # for i in mod_indices:
+            row_array = noise_df.iloc[i, :-2].values   
+            # row_array = np.where(row_array == 0, 1, 0)
+            row_array = self._flip_binary(row_array)
+            new_row = np.concatenate((row_array, noise_df.iloc[i, -2:]))
+            noise_df.iloc[i] = new_row
+        
+        
+        # print(df)
+        # print("=====")
+        # print(noise_df)
+        
+        return noise_df
+    
+    @staticmethod
+    def _flip_binary(row):  # row: a numpy array of 0s and 1s      
+        
+        # Define a probability threshold for flipping the binary values
+        prob_threshold = 0.3
+
+        # Generate a random number from a normal distribution with a mean of 0 and standard deviation of prob_threshold
+        random_number = np.random.normal(loc=0, scale=prob_threshold)
+
+        # Iterate over the binary list and flip each value with probability determined by random_number
+        flipped_list = []
+        for value in row:
+            if np.random.normal(loc=0, scale=prob_threshold) > random_number:
+                flipped_list.append(1 - value)  # flip the value
+            else:
+                flipped_list.append(value)  # keep the value
+    
+        return flipped_list
+    
+    # def train_data(self, window_size, label_ahead):
+    #     trainX = []
+    #     trainY = []
+        
+    #     _df = self.df.iloc[0:, :-1].reset_index(drop=True)    # remove header row & timestamp col
+    #     _X = self.df.iloc[0:, :-2].reset_index(drop=True)      # remove header row & activity+timestamp col
+    #     _Y = pd.get_dummies(self.df['Activity'])
+       
+    #     if _Y.shape[1] != len(self.activities):
+    #         warnings.warn("[SELF-WARNING]: dataset contains less type of activities.")
+
+    #     for i in range(window_size, len(_df) - label_ahead +1):
+    #         trainX.append(_X.iloc[i - window_size:i, ].values.tolist())
+    #         # trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.tolist()) # (18817, 1, 4)
+    #         trainY.append(_Y.iloc[i + label_ahead - 1:i + label_ahead].values.reshape(-1,).tolist()) # (18817, 4)
+        
+    #     trainX, trainY = np.array(trainX), np.array(trainY)
+                
+    #     print('trainX shape == {}.'.format(trainX.shape))
+    #     print('trainY shape == {}.'.format(trainY.shape))
+        
+    #     return trainX, trainY
     
     def statics(self):
         fields = {
